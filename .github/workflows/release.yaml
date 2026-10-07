@@ -1,0 +1,49 @@
+name: build exec
+on: [push]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up GraalVM Runtime
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compile Java Files
+        run: |
+          mkdir out
+          javac -d out src/Main.java src/*.java
+
+      - name: Create Runnable JAR
+        run: |
+          echo "Main-Class: Main" > manifest.txt
+          jar cvfm App.jar manifest.txt -C out .
+
+      - name: Build Native Binary (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          native-image -jar App.jar --no-fallback -O3 -o space-glider
+
+      - name: Build Native Binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          native-image -jar App.jar --no-fallback -O3 -o space-glider
+
+      - name: Upload Executable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-binary-${{ matrix.os }}
+          path: |
+            space-glider
+            space-glider.exe
