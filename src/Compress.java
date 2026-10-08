@@ -8,20 +8,27 @@ public class Compress {
 
     public static void compress(String filepath, String outputDir) {
         try {
-            String text = new String(Files.readAllBytes(Paths.get(filepath)), StandardCharsets.UTF_8);
-
+            String text = new String(
+                Files.readAllBytes(Paths.get(filepath)),
+                StandardCharsets.UTF_8
+            ); 
             String[] tokens = text.split("(?<=\\s)|(?=\\s)");
             Map<String, Integer> freq = new HashMap<>();
-            for (String t : tokens) freq.merge(t, 1, Integer::sum);
-
+            for (String t : tokens) {
+                freq.merge(t, 1, Integer::sum);
+            }
             List<String> dict = new ArrayList<>(freq.keySet());
             dict.sort((a, b) -> {
-                int c = Integer.compare(freq.get(b), freq.get(a));
+                int scoreA = freq.get(a) * a.getBytes(StandardCharsets.UTF_8).length;
+                int scoreB = freq.get(b) * b.getBytes(StandardCharsets.UTF_8).length;
+
+                int c = Integer.compare(scoreB, scoreA);
                 return c != 0 ? c : a.compareTo(b);
             });
-
             Map<String, Integer> rank = new HashMap<>();
-            for (int i = 0; i < dict.size(); i++) rank.put(dict.get(i), i);
+            for (int i = 0; i < dict.size(); i++) {
+                rank.put(dict.get(i), i);
+            }
 
             //    n=1: 1xxxxxxx ; n=2: 01xxxxxx xxxxxxxx ; n=3: 001xxxxx xxxxxxxx xxxxxxxx, n is how many byte the word will take in compression, a high count word will take a low count of bytes
             ByteArrayOutputStream buf = new ByteArrayOutputStream();

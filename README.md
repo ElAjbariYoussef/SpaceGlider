@@ -9,7 +9,7 @@ You can find the executable in [release](https://github.com/ElAjbariYoussef/Spac
 ## Usage
 
 ```
-space-glider Main -c <filepath> <directory>    Compress a file into <directory>
+space-glider -c <filepath> <directory>    Compress a file into <directory>
 space-glider -e <filepath> <directory>    Extract a .space file into <directory>
 ```
 
